@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galax·Launcher 管理员面板</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --orange: #d2991d;
+            --red: #f85149;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            padding: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent); margin-bottom: 25px; font-size: 28px; }
+        h2 { color: var(--text); margin: 20px 0 15px; font-size: 20px; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+        input, textarea, select {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 100%;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        button {
+            background: var(--green);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px 8px 5px 0;
+        }
+        button:hover { opacity: 0.85; }
+        button.danger { background: var(--red); }
+        button.warning { background: var(--orange); }
+        .device-list {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        .device-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-family: Consolas, monospace;
+            font-size: 15px;
+            letter-spacing: 2px;
+        }
+        .device-item:last-child { border-bottom: none; }
+        .device-item .code { color: #ffcc00; font-weight: bold; }
+        .device-item .time { color: #888; font-size: 12px; }
+        .badge { background: var(--green); color: #000; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-msg { margin: 10px 0; padding: 10px; border-radius: 8px; font-weight: bold; }
+        .status-success { background: rgba(63,185,80,0.2); color: var(--green); }
+        .status-error { background: rgba(248,81,73,0.2); color: var(--red); }
+        .row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .row > * { flex: 1; min-width: 200px; }
+        pre { background: #0d1117; padding: 15px; border-radius: 8px; font-size: 12px; overflow-x: auto; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; }
+        .tab-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+        }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <h1>🌌 Galax·Launcher 管理员</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('vip')">👑 VIP管理</button>
+        <button class="tab-btn" onclick="showTab('update')">🔄 更新发布</button>
+        <button class="tab-btn" onclick="showTab('announce')">📢 公告</button>
+        <button class="tab-btn" onclick="showTab('config')">⚙️ 配置</button>
+        <button class="tab-btn" onclick="showTab('export')">📤 导出</button>
+    </div>
+    
+    <!-- VIP管理 -->
+    <div id="tab-vip" class="tab-content active">
+        <div class="card">
+            <h2>➕ 激活VIP设备</h2>
+            <input type="text" id="deviceInput" placeholder="输入12位设备码" maxlength="12">
+            <button onclick="activateDevice()">✅ 立即激活</button>
+            <div id="vipMsg"></div>
+        </div>
+        
+        <div class="card">
+            <h2>📋 已激活设备列表</h2>
+            <button onclick="loadDevices()">🔄 刷新列表</button>
+            <button class="danger" onclick="clearAllDevices()">🗑️ 清空所有</button>
+            <div class="device-list" id="deviceList">
+                <div style="color:#888; text-align:center;">点击刷新加载设备列表</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 更新发布 -->
+    <div id="tab-update" class="tab-content">
+        <div class="card">
+            <h2>🔄 发布新版本</h2>
+            <div class="row">
+                <div>
+                    <label>版本号</label>
+                    <input type="text" id="updateVersion" placeholder="例如: 1.0.1">
+                </div>
+                <div>
+                    <label>下载链接</label>
+                    <input type="text" id="updateUrl" placeholder="GitHub Release URL">
+                </div>
+            </div>
+            <textarea id="updateNotes" placeholder="更新日志..."></textarea>
+            <button onclick="publishUpdate()">📤 发布更新</button>
+        </div>
+    </div>
+    
+    <!-- 公告 -->
+    <div id="tab-announce" class="tab-content">
+        <div class="card">
+            <h2>📢 发布公告</h2>
+            <textarea id="announcementText" placeholder="输入公告内容（支持Markdown）" rows="5"></textarea>
+            <button onclick="publishAnnouncement()">📢 发布公告</button>
+        </div>
+    </div>
+    
+    <!-- 配置 -->
+    <div id="tab-config" class="tab-content">
+        <div class="card">
+            <h2>🖼️ 收款码设置</h2>
+            <label>收款码图片URL</label>
+            <input type="text" id="qrUrlInput" placeholder="收款码图片链接">
+            <label>VIP价格</label>
+            <input type="text" id="priceInput" placeholder="23.33">
+            <button onclick="saveConfig()">💾 保存配置</button>
+        </div>
+    </div>
+    
+    <!-- 导出 -->
+    <div id="tab-export" class="tab-content">
+        <div class="card">
+            <h2>📤 导出数据</h2>
+            <button onclick="exportJSON()">📥 导出完整JSON</button>
+            <button class="warning" onclick="importJSON()">📤 导入JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display:none;" onchange="handleImport(event)">
+            <pre id="jsonPreview"></pre>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟数据存储（实际使用需要GitHub API）
+        let vipData = {
+            activated_devices: [],
+            announcement: "",
+            latest_version: "1.0.0",
+            update_url: "",
+            update_notes: "",
+            payment_qr_url: "https://s41.ax1x.com/2026/08/04/pmokgpQ.jpg",
+            price: "23.33"
+        };
+        
+        // 从localStorage加载
+        if(localStorage.getItem('galax_vip_data')) {
+            vipData = JSON.parse(localStorage.getItem('galax_vip_data'));
+        }
+        
+        function saveData() {
+            localStorage.setItem('galax_vip_data', JSON.stringify(vipData));
+            // 实际部署时需要推送到GitHub
+            alert('✅ 数据已保存（本地存储）\n实际部署请推送到GitHub');
+        }
+        
+        function showTab(name) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function activateDevice() {
+            const code = document.getElementById('deviceInput').value.trim().toUpperCase();
+            if (code.length !== 12) {
+                document.getElementById('vipMsg').innerHTML = '<div class="status-msg status-error">❌ 设备码必须是12位</div>';
+                return;
+            }
+            if (vipData.activated_devices.includes(code)) {
+                document.getElementById('vipMsg').innerHTML = '<div class="status-msg status-error">⚠️ 该设备已激活</div>';
+                return;
+            }
+            vipData.activated_devices.push(code);
+            saveData();
+            document.getElementById('vipMsg').innerHTML = `<div class="status-msg status-success">✅ 设备 ${code} 已激活！</div>`;
+            document.getElementById('deviceInput').value = '';
+            loadDevices();
+        }
+        
+        function loadDevices() {
+            const list = document.getElementById('deviceList');
+            if (vipData.activated_devices.length === 0) {
+                list.innerHTML = '<div style="color:#888; text-align:center;">暂无激活设备</div>';
+                return;
+            }
+            list.innerHTML = vipData.activated_devices.map(code => `
+                <div class="device-item">
+                    <span class="code">📟 ${code}</span>
+                    <span class="badge">已激活</span>
+                    <button class="danger" onclick="removeDevice('${code}')" style="padding:4px 12px; font-size:12px;">移除</button>
+                </div>
+            `).join('');
+        }
+        
+        function removeDevice(code) {
+            vipData.activated_devices = vipData.activated_devices.filter(d => d !== code);
+            saveData();
+            loadDevices();
+        }
+        
+        function clearAllDevices() {
+            if (confirm('确定要清空所有已激活设备吗？此操作不可恢复！')) {
+                vipData.activated_devices = [];
+                saveData();
+                loadDevices();
+            }
+        }
+        
+        function publishUpdate() {
+            vipData.latest_version = document.getElementById('updateVersion').value;
+            vipData.update_url = document.getElementById('updateUrl').value;
+            vipData.update_notes = document.getElementById('updateNotes').value;
+            saveData();
+            alert('✅ 更新已发布！\n版本: ' + vipData.latest_version);
+        }
+        
+        function publishAnnouncement() {
+            vipData.announcement = document.getElementById('announcementText').value;
+            saveData();
+            alert('✅ 公告已发布！');
+        }
+        
+        function saveConfig() {
+            vipData.payment_qr_url = document.getElementById('qrUrlInput').value || vipData.payment_qr_url;
+            vipData.price = document.getElementById('priceInput').value || vipData.price;
+            saveData();
+            alert('✅ 配置已保存！');
+        }
+        
+        function exportJSON() {
+            const json = JSON.stringify(vipData, null, 2);
+            document.getElementById('jsonPreview').textContent = json;
+            const blob = new Blob([json], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vip_data.json';
+            a.click();
+        }
+        
+        function importJSON() {
+            document.getElementById('importFile').click();
+        }
+        
+        function handleImport(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    vipData = data;
+                    saveData();
+                    alert('✅ 数据导入成功！');
+                    loadDevices();
+                } catch(err) {
+                    alert('❌ JSON格式错误');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // 页面加载时初始化
+        document.getElementById('updateVersion').value = vipData.latest_version;
+        document.getElementById('updateUrl').value = vipData.update_url;
+        document.getElementById('updateNotes').value = vipData.update_notes || '';
+        document.getElementById('announcementText').value = vipData.announcement;
+        document.getElementById('qrUrlInput').value = vipData.payment_qr_url;
+        document.getElementById('priceInput').value = vipData.price;
+        loadDevices();
+    </script>
+</body>
+</html>
