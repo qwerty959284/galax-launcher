@@ -63,7 +63,7 @@
             background: #0d1117;
             border-radius: 8px;
             padding: 12px;
-            max-height: 250px;
+            max-height: 300px;
             overflow-y: auto;
             margin: 10px 0;
         }
@@ -79,14 +79,12 @@
         }
         .device-item:last-child { border-bottom: none; }
         .device-item .code { color: #ffcc00; font-weight: bold; }
-        .device-item .time { color: #888; font-size: 12px; }
         .badge { background: var(--green); color: #000; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
         .status-msg { margin: 10px 0; padding: 10px; border-radius: 8px; font-weight: bold; }
         .status-success { background: rgba(63,185,80,0.2); color: var(--green); }
         .status-error { background: rgba(248,81,73,0.2); color: var(--red); }
         .row { display: flex; gap: 12px; flex-wrap: wrap; }
         .row > * { flex: 1; min-width: 200px; }
-        pre { background: #0d1117; padding: 15px; border-radius: 8px; font-size: 12px; overflow-x: auto; }
         .tabs { display: flex; gap: 5px; margin-bottom: 20px; }
         .tab-btn {
             background: var(--card);
@@ -99,34 +97,48 @@
         .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .token-hint { color: var(--orange); font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
     <h1>🌌 Galax·Launcher 管理员</h1>
+    
+    <!-- GitHub配置 -->
+    <div class="card" style="border-color: var(--orange);">
+        <h2>⚙️ GitHub 连接配置</h2>
+        <label>GitHub 用户名</label>
+        <input type="text" id="githubUser" placeholder="你的GitHub用户名">
+        <label>仓库名</label>
+        <input type="text" id="githubRepo" placeholder="galax-launcher" value="galax-launcher">
+        <label>Personal Access Token</label>
+        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        <div class="token-hint">⚠️ Token需要 repo 权限。Token只在本地浏览器存储，不会上传。</div>
+        <button onclick="connectGitHub()">🔗 连接GitHub</button>
+        <div id="connectStatus"></div>
+    </div>
     
     <div class="tabs">
         <button class="tab-btn active" onclick="showTab('vip')">👑 VIP管理</button>
         <button class="tab-btn" onclick="showTab('update')">🔄 更新发布</button>
         <button class="tab-btn" onclick="showTab('announce')">📢 公告</button>
         <button class="tab-btn" onclick="showTab('config')">⚙️ 配置</button>
-        <button class="tab-btn" onclick="showTab('export')">📤 导出</button>
     </div>
     
     <!-- VIP管理 -->
     <div id="tab-vip" class="tab-content active">
         <div class="card">
             <h2>➕ 激活VIP设备</h2>
-            <input type="text" id="deviceInput" placeholder="输入12位设备码" maxlength="12">
+            <input type="text" id="deviceInput" placeholder="输入12位设备码" maxlength="12" style="letter-spacing:3px; font-size:16px;">
             <button onclick="activateDevice()">✅ 立即激活</button>
             <div id="vipMsg"></div>
         </div>
         
         <div class="card">
-            <h2>📋 已激活设备列表</h2>
-            <button onclick="loadDevices()">🔄 刷新列表</button>
-            <button class="danger" onclick="clearAllDevices()">🗑️ 清空所有</button>
+            <h2>📋 已激活设备</h2>
+            <button onclick="loadDevices()">🔄 刷新</button>
+            <button class="danger" onclick="removeAllDevices()">🗑️ 清空</button>
             <div class="device-list" id="deviceList">
-                <div style="color:#888; text-align:center;">点击刷新加载设备列表</div>
+                <div style="color:#888; text-align:center;">点击刷新加载</div>
             </div>
         </div>
     </div>
@@ -134,19 +146,20 @@
     <!-- 更新发布 -->
     <div id="tab-update" class="tab-content">
         <div class="card">
-            <h2>🔄 发布新版本</h2>
+            <h2>🔄 发布更新</h2>
             <div class="row">
                 <div>
-                    <label>版本号</label>
-                    <input type="text" id="updateVersion" placeholder="例如: 1.0.1">
+                    <label>新版本号</label>
+                    <input type="text" id="updateVersion" placeholder="1.0.1">
                 </div>
                 <div>
                     <label>下载链接</label>
                     <input type="text" id="updateUrl" placeholder="GitHub Release URL">
                 </div>
             </div>
-            <textarea id="updateNotes" placeholder="更新日志..."></textarea>
-            <button onclick="publishUpdate()">📤 发布更新</button>
+            <label>更新日志</label>
+            <textarea id="updateNotes" placeholder="更新内容..."></textarea>
+            <button onclick="publishUpdate()">📤 发布</button>
         </div>
     </div>
     
@@ -154,57 +167,136 @@
     <div id="tab-announce" class="tab-content">
         <div class="card">
             <h2>📢 发布公告</h2>
-            <textarea id="announcementText" placeholder="输入公告内容（支持Markdown）" rows="5"></textarea>
-            <button onclick="publishAnnouncement()">📢 发布公告</button>
+            <textarea id="announcementText" placeholder="公告内容..." rows="4"></textarea>
+            <button onclick="publishAnnouncement()">📢 发布</button>
         </div>
     </div>
     
     <!-- 配置 -->
     <div id="tab-config" class="tab-content">
         <div class="card">
-            <h2>🖼️ 收款码设置</h2>
+            <h2>⚙️ 启动器配置</h2>
             <label>收款码图片URL</label>
-            <input type="text" id="qrUrlInput" placeholder="收款码图片链接">
-            <label>VIP价格</label>
+            <input type="text" id="qrUrlInput" placeholder="收款码链接">
+            <label>VIP价格（元）</label>
             <input type="text" id="priceInput" placeholder="23.33">
-            <button onclick="saveConfig()">💾 保存配置</button>
-        </div>
-    </div>
-    
-    <!-- 导出 -->
-    <div id="tab-export" class="tab-content">
-        <div class="card">
-            <h2>📤 导出数据</h2>
-            <button onclick="exportJSON()">📥 导出完整JSON</button>
-            <button class="warning" onclick="importJSON()">📤 导入JSON</button>
-            <input type="file" id="importFile" accept=".json" style="display:none;" onchange="handleImport(event)">
-            <pre id="jsonPreview"></pre>
+            <button onclick="saveConfig()">💾 保存</button>
         </div>
     </div>
     
     <script>
-        // 模拟数据存储（实际使用需要GitHub API）
-        let vipData = {
-            activated_devices: [],
-            announcement: "",
-            latest_version: "1.0.0",
-            update_url: "",
-            update_notes: "",
-            payment_qr_url: "https://s41.ax1x.com/2026/08/04/pmokgpQ.jpg",
-            price: "23.33"
-        };
+        // ==================== GitHub API ====================
+        let githubUser = localStorage.getItem('galax_github_user') || '';
+        let githubRepo = localStorage.getItem('galax_github_repo') || 'galax-launcher';
+        let githubToken = localStorage.getItem('galax_github_token') || '';
+        let vipData = null;
         
-        // 从localStorage加载
-        if(localStorage.getItem('galax_vip_data')) {
-            vipData = JSON.parse(localStorage.getItem('galax_vip_data'));
+        // 页面加载时恢复配置
+        document.getElementById('githubUser').value = githubUser;
+        document.getElementById('githubRepo').value = githubRepo;
+        document.getElementById('githubToken').value = githubToken;
+        
+        function connectGitHub() {
+            githubUser = document.getElementById('githubUser').value.trim();
+            githubRepo = document.getElementById('githubRepo').value.trim();
+            githubToken = document.getElementById('githubToken').value.trim();
+            
+            if (!githubUser || !githubRepo || !githubToken) {
+                document.getElementById('connectStatus').innerHTML = '<div class="status-msg status-error">❌ 请填写完整信息</div>';
+                return;
+            }
+            
+            // 保存到本地
+            localStorage.setItem('galax_github_user', githubUser);
+            localStorage.setItem('galax_github_repo', githubRepo);
+            localStorage.setItem('galax_github_token', githubToken);
+            
+            // 测试连接
+            loadVIPData().then(() => {
+                document.getElementById('connectStatus').innerHTML = '<div class="status-msg status-success">✅ 连接成功！</div>';
+                loadDevices();
+                loadCurrentConfig();
+            }).catch(err => {
+                document.getElementById('connectStatus').innerHTML = `<div class="status-msg status-error">❌ 连接失败: ${err.message}</div>`;
+            });
         }
         
-        function saveData() {
-            localStorage.setItem('galax_vip_data', JSON.stringify(vipData));
-            // 实际部署时需要推送到GitHub
-            alert('✅ 数据已保存（本地存储）\n实际部署请推送到GitHub');
+        async function loadVIPData() {
+            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/vip_data.json`;
+            const resp = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (resp.status === 200) {
+                const data = await resp.json();
+                const content = atob(data.content);
+                vipData = JSON.parse(content);
+                return vipData;
+            } else if (resp.status === 404) {
+                // 文件不存在，创建默认数据
+                vipData = {
+                    activated_devices: [],
+                    announcement: "",
+                    latest_version: "1.0.0",
+                    update_url: "",
+                    update_notes: "",
+                    payment_qr_url: "https://s41.ax1x.com/2026/08/04/pmokgpQ.jpg",
+                    price: "23.33"
+                };
+                await saveVIPData();
+                return vipData;
+            } else {
+                throw new Error(`HTTP ${resp.status}`);
+            }
         }
         
+        async function saveVIPData() {
+            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/vip_data.json`;
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(vipData, null, 2))));
+            
+            // 先获取当前文件的sha
+            let sha = null;
+            try {
+                const getResp = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                if (getResp.status === 200) {
+                    const data = await getResp.json();
+                    sha = data.sha;
+                }
+            } catch(e) {}
+            
+            const body = {
+                message: '更新VIP数据',
+                content: content,
+                branch: 'main'
+            };
+            if (sha) body.sha = sha;
+            
+            const resp = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            
+            if (resp.status !== 200 && resp.status !== 201) {
+                const errData = await resp.json();
+                throw new Error(errData.message || '保存失败');
+            }
+            return true;
+        }
+        
+        // ==================== Tab切换 ====================
         function showTab(name) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -212,7 +304,13 @@
             event.target.classList.add('active');
         }
         
-        function activateDevice() {
+        // ==================== VIP管理 ====================
+        async function activateDevice() {
+            if (!vipData) {
+                document.getElementById('vipMsg').innerHTML = '<div class="status-msg status-error">❌ 请先连接GitHub</div>';
+                return;
+            }
+            
             const code = document.getElementById('deviceInput').value.trim().toUpperCase();
             if (code.length !== 12) {
                 document.getElementById('vipMsg').innerHTML = '<div class="status-msg status-error">❌ 设备码必须是12位</div>';
@@ -222,16 +320,23 @@
                 document.getElementById('vipMsg').innerHTML = '<div class="status-msg status-error">⚠️ 该设备已激活</div>';
                 return;
             }
+            
             vipData.activated_devices.push(code);
-            saveData();
-            document.getElementById('vipMsg').innerHTML = `<div class="status-msg status-success">✅ 设备 ${code} 已激活！</div>`;
-            document.getElementById('deviceInput').value = '';
-            loadDevices();
+            
+            try {
+                await saveVIPData();
+                document.getElementById('vipMsg').innerHTML = `<div class="status-msg status-success">✅ 设备 ${code} 已激活！数据已同步到GitHub</div>`;
+                document.getElementById('deviceInput').value = '';
+                loadDevices();
+            } catch(err) {
+                document.getElementById('vipMsg').innerHTML = `<div class="status-msg status-error">❌ 保存失败: ${err.message}</div>`;
+                vipData.activated_devices.pop();
+            }
         }
         
         function loadDevices() {
             const list = document.getElementById('deviceList');
-            if (vipData.activated_devices.length === 0) {
+            if (!vipData || vipData.activated_devices.length === 0) {
                 list.innerHTML = '<div style="color:#888; text-align:center;">暂无激活设备</div>';
                 return;
             }
@@ -244,81 +349,87 @@
             `).join('');
         }
         
-        function removeDevice(code) {
+        async function removeDevice(code) {
+            if (!confirm(`确定移除设备 ${code} 吗？`)) return;
             vipData.activated_devices = vipData.activated_devices.filter(d => d !== code);
-            saveData();
-            loadDevices();
-        }
-        
-        function clearAllDevices() {
-            if (confirm('确定要清空所有已激活设备吗？此操作不可恢复！')) {
-                vipData.activated_devices = [];
-                saveData();
+            try {
+                await saveVIPData();
                 loadDevices();
+            } catch(err) {
+                alert('保存失败: ' + err.message);
             }
         }
         
-        function publishUpdate() {
+        async function removeAllDevices() {
+            if (!confirm('确定清空所有设备吗？')) return;
+            vipData.activated_devices = [];
+            try {
+                await saveVIPData();
+                loadDevices();
+            } catch(err) {
+                alert('保存失败: ' + err.message);
+            }
+        }
+        
+        // ==================== 更新发布 ====================
+        async function publishUpdate() {
+            if (!vipData) return alert('请先连接GitHub');
             vipData.latest_version = document.getElementById('updateVersion').value;
             vipData.update_url = document.getElementById('updateUrl').value;
             vipData.update_notes = document.getElementById('updateNotes').value;
-            saveData();
-            alert('✅ 更新已发布！\n版本: ' + vipData.latest_version);
+            try {
+                await saveVIPData();
+                alert('✅ 更新已发布！');
+            } catch(err) {
+                alert('❌ 发布失败: ' + err.message);
+            }
         }
         
-        function publishAnnouncement() {
+        // ==================== 公告 ====================
+        async function publishAnnouncement() {
+            if (!vipData) return alert('请先连接GitHub');
             vipData.announcement = document.getElementById('announcementText').value;
-            saveData();
-            alert('✅ 公告已发布！');
+            try {
+                await saveVIPData();
+                alert('✅ 公告已发布！');
+            } catch(err) {
+                alert('❌ 发布失败: ' + err.message);
+            }
         }
         
-        function saveConfig() {
+        // ==================== 配置 ====================
+        async function saveConfig() {
+            if (!vipData) return alert('请先连接GitHub');
             vipData.payment_qr_url = document.getElementById('qrUrlInput').value || vipData.payment_qr_url;
             vipData.price = document.getElementById('priceInput').value || vipData.price;
-            saveData();
-            alert('✅ 配置已保存！');
+            try {
+                await saveVIPData();
+                alert('✅ 配置已保存！');
+            } catch(err) {
+                alert('❌ 保存失败: ' + err.message);
+            }
         }
         
-        function exportJSON() {
-            const json = JSON.stringify(vipData, null, 2);
-            document.getElementById('jsonPreview').textContent = json;
-            const blob = new Blob([json], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'vip_data.json';
-            a.click();
+        function loadCurrentConfig() {
+            if (!vipData) return;
+            document.getElementById('updateVersion').value = vipData.latest_version || '';
+            document.getElementById('updateUrl').value = vipData.update_url || '';
+            document.getElementById('updateNotes').value = vipData.update_notes || '';
+            document.getElementById('announcementText').value = vipData.announcement || '';
+            document.getElementById('qrUrlInput').value = vipData.payment_qr_url || '';
+            document.getElementById('priceInput').value = vipData.price || '23.33';
         }
         
-        function importJSON() {
-            document.getElementById('importFile').click();
+        // 自动连接
+        if (githubUser && githubToken) {
+            loadVIPData().then(() => {
+                document.getElementById('connectStatus').innerHTML = '<div class="status-msg status-success">✅ 自动连接成功！</div>';
+                loadDevices();
+                loadCurrentConfig();
+            }).catch(err => {
+                document.getElementById('connectStatus').innerHTML = `<div class="status-msg status-error">⚠️ 自动连接失败: ${err.message}</div>`;
+            });
         }
-        
-        function handleImport(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    vipData = data;
-                    saveData();
-                    alert('✅ 数据导入成功！');
-                    loadDevices();
-                } catch(err) {
-                    alert('❌ JSON格式错误');
-                }
-            };
-            reader.readAsText(file);
-        }
-        
-        // 页面加载时初始化
-        document.getElementById('updateVersion').value = vipData.latest_version;
-        document.getElementById('updateUrl').value = vipData.update_url;
-        document.getElementById('updateNotes').value = vipData.update_notes || '';
-        document.getElementById('announcementText').value = vipData.announcement;
-        document.getElementById('qrUrlInput').value = vipData.payment_qr_url;
-        document.getElementById('priceInput').value = vipData.price;
-        loadDevices();
     </script>
 </body>
 </html>
