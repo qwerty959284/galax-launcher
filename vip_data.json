@@ -2,10 +2,10 @@
   "activated_devices": [
     "C89F31489EA0"
   ],
-  "announcement": "æè°¢ä½¿ç¨ï¼",
-  "latest_version": "1.0.1",
+  "announcement": "Ã¦ÂÂÃ¨Â°Â¢Ã¤Â½Â¿Ã§ÂÂ¨Ã¯Â¼Â",
+  "latest_version": "2.0.0",
   "update_url": "https://github.com/qwerty959284/galax-launcher/releases/",
-  "update_notes": "[#]修复无法启动游戏\n[#]修复支付二维码无法显示\n[+]加入mod加载器\n[+]加入全版本我的世界下载\n[+]加入全版本java下载\n[+]更多设置",
+  "update_notes": "[#]修复无法启动游戏\n[#]修复支付二维码无法显示\n[+]加入mod加载器\n[+]加入全版本我的世界下载\n[+]加入全版本java下载\n[+]更多设置\n[+]检查更新与公告",
   "payment_qr_url": "https://s41.ax1x.com/2026/08/04/pmokgpQ.jpg",
   "price": "23.33"
 }
