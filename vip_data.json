@@ -2,10 +2,10 @@
   "activated_devices": [
     "C89F31489EA0"
   ],
-  "announcement": "感谢使用",
-  "latest_version": "2.0.0",
-  "update_url": "",
-  "update_notes": "",
+  "announcement": "æè°¢ä½¿ç¨",
+  "latest_version": "2.0.1",
+  "update_url": "https://github.com/qwerty959284/galax-download/releases/tag/%E5%90%AF%E5%8A%A8%E5%99%A8%E6%9B%B4%E6%96%B0",
+  "update_notes": "[#]修复无法下载游戏\n[#]修复版本显示问题\n[+]下载进度条\n",
   "payment_qr_url": "https://s41.ax1x.com/2026/08/04/pmokgpQ.jpg",
   "price": "23.33"
 }
