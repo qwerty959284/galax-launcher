@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -172,12 +172,10 @@
         </div>
     </div>
     
-    <!-- 配置 -->
+    <!-- 配置（已移除收款码URL） -->
     <div id="tab-config" class="tab-content">
         <div class="card">
             <h2>⚙️ 启动器配置</h2>
-            <label>收款码图片URL</label>
-            <input type="text" id="qrUrlInput" placeholder="收款码链接">
             <label>VIP价格（元）</label>
             <input type="text" id="priceInput" placeholder="23.33">
             <button onclick="saveConfig()">💾 保存</button>
@@ -191,7 +189,6 @@
         let githubToken = localStorage.getItem('galax_github_token') || '';
         let vipData = null;
         
-        // 页面加载时恢复配置
         document.getElementById('githubUser').value = githubUser;
         document.getElementById('githubRepo').value = githubRepo;
         document.getElementById('githubToken').value = githubToken;
@@ -206,12 +203,10 @@
                 return;
             }
             
-            // 保存到本地
             localStorage.setItem('galax_github_user', githubUser);
             localStorage.setItem('galax_github_repo', githubRepo);
             localStorage.setItem('galax_github_token', githubToken);
             
-            // 测试连接
             loadVIPData().then(() => {
                 document.getElementById('connectStatus').innerHTML = '<div class="status-msg status-success">✅ 连接成功！</div>';
                 loadDevices();
@@ -232,18 +227,23 @@
             
             if (resp.status === 200) {
                 const data = await resp.json();
-                const content = atob(data.content);
+                // 修复中文乱码：Base64 解码后按 UTF-8 解析
+                const binary = atob(data.content.replace(/\n/g, ''));
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                const content = new TextDecoder('utf-8').decode(bytes);
                 vipData = JSON.parse(content);
                 return vipData;
             } else if (resp.status === 404) {
-                // 文件不存在，创建默认数据
                 vipData = {
                     activated_devices: [],
                     announcement: "",
                     latest_version: "1.0.0",
                     update_url: "",
                     update_notes: "",
-                    payment_qr_url: "https://s41.ax1x.com/2026/08/04/pmokgpQ.jpg",
+                    payment_qr_url: "VIP.jpg",
                     price: "23.33"
                 };
                 await saveVIPData();
@@ -255,9 +255,13 @@
         
         async function saveVIPData() {
             const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/vip_data.json`;
-            const content = btoa(unescape(encodeURIComponent(JSON.stringify(vipData, null, 2))));
+            // 修复中文乱码：UTF-8 编码后再 Base64
+            const jsonStr = JSON.stringify(vipData, null, 2);
+            const utf8Bytes = new TextEncoder().encode(jsonStr);
+            let binary = '';
+            utf8Bytes.forEach(b => binary += String.fromCharCode(b));
+            const content = btoa(binary);
             
-            // 先获取当前文件的sha
             let sha = null;
             try {
                 const getResp = await fetch(url, {
@@ -400,7 +404,6 @@
         // ==================== 配置 ====================
         async function saveConfig() {
             if (!vipData) return alert('请先连接GitHub');
-            vipData.payment_qr_url = document.getElementById('qrUrlInput').value || vipData.payment_qr_url;
             vipData.price = document.getElementById('priceInput').value || vipData.price;
             try {
                 await saveVIPData();
@@ -416,7 +419,6 @@
             document.getElementById('updateUrl').value = vipData.update_url || '';
             document.getElementById('updateNotes').value = vipData.update_notes || '';
             document.getElementById('announcementText').value = vipData.announcement || '';
-            document.getElementById('qrUrlInput').value = vipData.payment_qr_url || '';
             document.getElementById('priceInput').value = vipData.price || '23.33';
         }
         
