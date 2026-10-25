@@ -1,8 +1,8 @@
 {
   "activated_devices": [],
   "announcement": "欢迎使用 Galax·Launcher！",
-  "latest_version": "2.0.1",
-  "update_url": "",
-  "update_notes": "修复了部分已知问题",
+  "latest_version": "2.0.2",
+  "update_url": "https://github.com/qwerty959284/galax-download/releases/tag/%E6%9B%B4%E6%96%B0%E5%90%AF%E5%8A%A8%E5%99%A8",
+  "update_notes": "修复了部分已知问题[#]修复启动器无法启动游戏\n[#]修复付款界面无法展示二维码\n[#]修复每次启动都要选择目录\n[#]修复无法连接服务器\n[#]修复公告获取等全是乱码\n[+]添加数字加密签名",
   "price": "23.33"
 }
