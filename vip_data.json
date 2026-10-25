@@ -3,8 +3,8 @@
     "C89F31489EA0"
   ],
   "announcement": "我们服务器用的是国外的github，打开后会有卡顿，可以尝试使用VPN进行加速",
-  "latest_version": "2.0.3",
-  "update_url": "https://github.com/qwerty959284/galax-download/releases/tag/%E6%9B%B4%E6%96%B0%E5%90%AF%E5%8A%A8%E5%99%A82",
-  "update_notes": " [#]修复不购买VIP可以直接修改颜色主题",
+  "latest_version": "2.0.4",
+  "update_url": "https://github.com/qwerty959284/galax-download/releases/tag/%E6%9B%B4%E6%96%B0%E5%90%AF%E5%8A%A8%E5%99%A83",
+  "update_notes": "[#]修复VIP无法激活",
   "price": "23.33"
 }
